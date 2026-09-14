@@ -25,7 +25,7 @@ sudo apt install -y \
 echo "==> Installing runtime tools"
 sudo apt install -y \
     waybar wofi autotiling \
-    playerctl mako-notifier cliphist nwg-bar wl-clipboard swaylock wlsunset \
+    playerctl mako-notifier cliphist nwg-bar wl-clipboard swaylock swayidle wlsunset \
     grim jq wtype brightnessctl unzip curl \
     python3-gi gir1.2-gtk-3.0 gir1.2-gdkpixbuf-2.0
 

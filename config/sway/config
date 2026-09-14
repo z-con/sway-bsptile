@@ -37,6 +37,15 @@ exec_always killall -q waybar; exec waybar
 # killall needed here -- it's a single-instance DBus service, so a second
 # `mako` from a config reload just fails to grab the name and exits quietly.
 exec_always mako
+# swayidle: lock after 15min idle, then suspend. before-sleep also locks, as
+# a safety net for suspends triggered outside the idle timer (e.g. lid
+# close), since sway itself does no idle/power management on its own.
+# killall guard for the same reason as waybar above -- exec_always reruns on
+# reload and swayidle has no single-instance guard of its own.
+exec_always killall -q swayidle; exec swayidle -w \
+    timeout 900 'swaylock -f' \
+    timeout 900 'systemctl suspend' \
+    before-sleep 'swaylock -f'
 # feed clipboard history into cliphist (text + images separately, per
 # cliphist's own recommendation) -- plain `exec`, not `exec_always`, since
 # these are long-running watchers with no single-instance guard of their
