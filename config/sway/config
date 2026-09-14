@@ -123,10 +123,11 @@ bindsym $mod+space exec $menu
 bindsym $mod+t floating toggle
 # clipboard history picker (same action as clicking the clipboard icon in
 # waybar) -- Super+V was already taken by splitv, so this lives on Ctrl+V.
-# After copying the picked entry, synthesize Ctrl+V with wtype so it pastes
-# straight into whatever window has focus instead of just sitting on the
-# clipboard waiting for a manual paste.
-bindsym $mod+Ctrl+v exec cliphist list | wofi --dmenu | cliphist decode | wl-copy && sleep 0.1 && wtype -M ctrl -P v -p v -m ctrl
+# After copying the picked entry, synthesize a paste into whatever window
+# has focus instead of just sitting on the clipboard waiting for a manual
+# paste. Terminals (ghostty included) bind paste to Ctrl+Shift+V, not plain
+# Ctrl+V, so scripts/paste-focused.sh picks the right keystroke per app_id.
+bindsym $mod+Ctrl+v exec cliphist list | wofi --dmenu | cliphist decode | wl-copy && sleep 0.1 && ~/.config/sway/scripts/paste-focused.sh
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes, exit sway' 'swaymsg exit'
 
