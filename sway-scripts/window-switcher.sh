@@ -4,19 +4,16 @@
 # spatial like macOS's exposé, but same job -- one gesture, see everything
 # open, land on one. Bound to a 3-finger swipe up.
 #
-# Windows on the current workspace get a live thumbnail (grim can only
-# screenshot what's actually being composited); everything else falls back
-# to its app icon, since sway/wlroots has no way to capture a window that
-# isn't on screen right now.
+# Each entry shows its app icon (not a live thumbnail -- simpler and more
+# consistent across workspaces, since sway/wlroots can't screenshot a
+# window that isn't currently on screen anyway).
 set -euo pipefail
 
 tree_json=$(mktemp)
-thumb_dir=$(mktemp -d)
-trap 'rm -f "$tree_json"; rm -rf "$thumb_dir"' EXIT
+trap 'rm -f "$tree_json"' EXIT
 swaymsg -t get_tree > "$tree_json"
-current_ws=$(swaymsg -t get_workspaces | jq -r '.[] | select(.focused) | .name')
 
-line_num=$(python3 ~/.local/share/sway-scripts/window-switcher.py list "$current_ws" "$thumb_dir" < "$tree_json" \
+line_num=$(python3 ~/.local/share/sway-scripts/window-switcher.py list < "$tree_json" \
     | wofi --dmenu --allow-images -O default -D dmenu-print_line_num=true --prompt "Windows")
 
 [ -n "$line_num" ] || exit 0

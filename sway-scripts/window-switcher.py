@@ -9,45 +9,18 @@
 # Two passes over the same fixed order (rather than parsing wofi's raw text
 # back) sidesteps ever having to know exactly how wofi's image-escape syntax
 # interacts with selection output.
-import os
 import sys
 import json
-import subprocess
 import warnings
 
 import gi
 gi.require_version("Gtk", "3.0")
-gi.require_version("GdkPixbuf", "2.0")
-from gi.repository import Gio, Gtk, GdkPixbuf
+from gi.repository import Gio, Gtk
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 ICON_SIZE = 32
 FALLBACK_ICON = "application-x-executable"
-THUMB_WIDTH = 220  # live thumbnails are downscaled to this width
-
-
-def capture_thumbnail(rect, dest_path):
-    """Grab just this window's on-screen region and downscale it. Only
-    works for windows on the currently-visible workspace -- sway/wlroots
-    has no way to screenshot a window that isn't actually being
-    composited, so this is never attempted for other workspaces."""
-    geometry = f"{rect['x']},{rect['y']} {rect['width']}x{rect['height']}"
-    raw_path = dest_path + ".raw.png"
-    result = subprocess.run(
-        ["grim", "-g", geometry, raw_path], capture_output=True
-    )
-    if result.returncode != 0:
-        return None
-    pixbuf = GdkPixbuf.Pixbuf.new_from_file(raw_path)
-    scale = THUMB_WIDTH / pixbuf.get_width()
-    thumb_height = max(1, round(pixbuf.get_height() * scale))
-    scaled = pixbuf.scale_simple(
-        THUMB_WIDTH, thumb_height, GdkPixbuf.InterpType.BILINEAR
-    )
-    scaled.savev(dest_path, "png", [], [])
-    os.remove(raw_path)
-    return dest_path
 
 
 def resolve_icon(app_id):
@@ -90,7 +63,6 @@ def collect_windows(tree):
                     "ws": ws_name,
                     "title": title,
                     "app_id": node.get("app_id"),
-                    "rect": node.get("rect"),
                 }
             )
         for child in node.get("nodes", []) + node.get("floating_nodes", []):
@@ -106,14 +78,8 @@ def main():
     windows = collect_windows(tree)
 
     if mode == "list":
-        current_ws = sys.argv[2] if len(sys.argv) > 2 else None
-        thumb_dir = sys.argv[3] if len(sys.argv) > 3 else None
-        for i, w in enumerate(windows):
-            image = None
-            if current_ws and w["ws"] == current_ws and thumb_dir and w["rect"]:
-                image = capture_thumbnail(w["rect"], f"{thumb_dir}/{i}.png")
-            if image is None:
-                image = resolve_icon(w["app_id"]) if w["app_id"] else None
+        for w in windows:
+            image = resolve_icon(w["app_id"]) if w["app_id"] else None
             label = f"[{w['ws']}] {w['title']}"
             if image:
                 print(f"img:{image}:text:{label}")
