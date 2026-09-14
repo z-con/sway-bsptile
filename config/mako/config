@@ -1,0 +1,21 @@
+# mako notification daemon -- styled to match the rest of the sway-bsptile
+# theme (purple accent, translucent dark, rounded corners), standing in for
+# bsptile's blurred/tinted GNOME notification popups.
+background-color=#1c1c20c8
+text-color=#e8e8e8ff
+border-color=#9d4eddff
+border-size=2
+border-radius=12
+padding=10
+margin=10
+font=Ubuntu Sans 11
+default-timeout=5000
+max-visible=5
+layer=overlay
+
+[urgency=low]
+border-color=#444444ff
+
+[urgency=critical]
+border-color=#d64541ff
+default-timeout=0

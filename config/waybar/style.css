@@ -1,0 +1,189 @@
+/* Pill/rounded eye-candy adapted from Ubuntu Sway Remix's waybar stylesheet
+ * (etc/xdg/xdg-ubuntusway/waybar/style.css), rebuilt against our own palette
+ * instead of their GTK @theme_* variables (which come from a color-generation
+ * pipeline we don't have) -- same purple accent used for the sway focus
+ * border and JankyBorders on bsptile-mac, same dark tint as the original flat
+ * bar. Floating rounded bar (margins on the bar itself + border-radius) is
+ * the Remix-style "eye candy" upgrade over the previous flush full-width bar.
+ */
+
+@define-color bg_color rgba(28, 28, 32, 0.78);
+@define-color pill_color rgba(255, 255, 255, 0.08);
+@define-color fg_color #e8e8e8;
+@define-color muted_color #aaaaaa;
+@define-color accent #9d4edd;
+@define-color accent_fg #ffffff;
+@define-color warning_color #e5c07b;
+@define-color error_color #d64541;
+
+@keyframes blink-warning {
+    70% { color: @fg_color; }
+    to  { color: @fg_color; background-color: @warning_color; }
+}
+
+@keyframes blink-critical {
+    70% { color: @fg_color; }
+    to  { color: @fg_color; background-color: @error_color; }
+}
+
+* {
+    border: none;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    font-family: "Ubuntu Sans", "Symbols Nerd Font", sans-serif;
+    font-size: 13px;
+}
+
+window#waybar {
+    background: @bg_color;
+    color: @fg_color;
+    border-radius: 14px;
+}
+
+#workspaces {
+    margin: 4px 4px;
+}
+
+#workspaces button {
+    padding: 0 10px;
+    margin: 0 2px;
+    border-radius: 10px;
+    color: @muted_color;
+    background: transparent;
+}
+
+#workspaces button.focused {
+    color: @accent_fg;
+    background-color: @accent;
+}
+
+#workspaces button.urgent {
+    color: @error_color;
+}
+
+#mode {
+    padding: 0 10px;
+    margin: 4px 3px;
+    border-radius: 10px;
+    background: @pill_color;
+}
+
+#window {
+    color: @muted_color;
+}
+
+#idle_inhibitor,
+#cpu,
+#memory,
+#temperature,
+#battery,
+#network,
+#bluetooth,
+#pulseaudio,
+#tray,
+#clock,
+#custom-dnd,
+#custom-clipboard,
+#custom-playerctl,
+#custom-scratchpad,
+#custom-weather,
+#custom-wlsunset {
+    padding: 0 10px;
+    margin: 4px 3px;
+    border-radius: 10px;
+    background: @pill_color;
+}
+
+#clock {
+    background: @accent;
+    color: @accent_fg;
+    font-weight: 600;
+}
+
+#idle_inhibitor.activated {
+    background: @accent;
+    color: @accent_fg;
+}
+
+/* Menu (left edge) and power (right edge) bookend the bar as solid accent
+ * buttons, like a launcher/power pair either side of a rice-style panel. */
+#custom-menu,
+#custom-power {
+    margin: 4px 6px;
+    padding: 0 12px;
+    border-radius: 10px;
+    background: @accent;
+    color: @accent_fg;
+    font-size: 15px;
+}
+
+#custom-dnd.dnd {
+    background: @accent;
+    color: @accent_fg;
+}
+
+#custom-wlsunset.on {
+    background: @accent;
+    color: @accent_fg;
+}
+
+#battery {
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+#battery.warning {
+    color: @warning_color;
+}
+
+#battery.critical {
+    color: @error_color;
+}
+
+#battery.warning.discharging {
+    animation-name: blink-warning;
+    animation-duration: 3s;
+}
+
+#battery.critical.discharging {
+    animation-name: blink-critical;
+    animation-duration: 2s;
+}
+
+#cpu.warning,
+#memory.warning,
+#temperature.critical {
+    color: @warning_color;
+}
+
+#cpu.critical,
+#memory.critical {
+    color: @error_color;
+}
+
+#network.disconnected {
+    color: @muted_color;
+}
+
+#bluetooth.disabled {
+    color: @muted_color;
+}
+
+#pulseaudio.muted {
+    color: @muted_color;
+}
+
+#tray {
+    padding: 0 12px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    background-color: @error_color;
+}

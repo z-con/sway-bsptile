@@ -1,0 +1,2 @@
+# SwayFX build tree -- install.sh always clones+builds this fresh
+build-src/

@@ -1,0 +1,11 @@
+# bsptile: Super+Space opens GNOME's Activities Overview (Spotlight-style
+# app search). wofi in drun mode is the closest sway equivalent, bound to
+# the same key in ~/.config/sway/config.
+width=600
+height=400
+location=center
+show=drun
+prompt=Search apps...
+allow_images=true
+insensitive=true
+no_actions=true

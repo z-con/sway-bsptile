@@ -1,0 +1,234 @@
+// waybar config -- bsptile-style top panel, with layout/module choices borrowed
+// from Ubuntu Sway Remix's default waybar (github.com/Ubuntu-Sway/ubuntu-sway-
+// default-settings, etc/xdg/xdg-ubuntusway/waybar/config.jsonrc). custom/weather,
+// custom/wlsunset, custom/scratchpad use scripts copied from that repo into
+// ~/.local/share/sway-scripts/ (no sudo needed to place them there).
+// custom/clipboard, custom/dnd, custom/playerctl, custom/power need
+// cliphist/wl-clipboard, mako-notifier, playerctl, and nwg-bar+swaylock
+// respectively -- install with:
+//   sudo apt install playerctl mako-notifier cliphist nwg-bar wl-clipboard swaylock wlsunset
+// custom/menu points at wofi (already installed) instead of Remix's
+// nwg-drawer, which isn't packaged for this distro.
+{
+    "layer": "top",
+    "position": "top",
+    "height": 32,
+    "spacing": 4,
+    "margin-top": 6,
+    "margin-left": 10,
+    "margin-right": 10,
+
+    "modules-left": ["custom/menu", "sway/workspaces", "sway/mode"],
+    "modules-center": ["sway/window"],
+    "modules-right": [
+        "custom/weather",
+        "custom/wlsunset",
+        "custom/playerctl",
+        "custom/scratchpad",
+        "idle_inhibitor",
+        "custom/dnd",
+        "custom/clipboard",
+        "cpu",
+        "memory",
+        "temperature",
+        "battery",
+        "network",
+        "bluetooth",
+        "pulseaudio",
+        "tray",
+        "clock",
+        "custom/power"
+    ],
+
+    "sway/workspaces": {
+        "disable-scroll": true,
+        "all-outputs": false
+    },
+    "sway/mode": {
+        "format": "<span style=\"italic\">{}</span>",
+        "tooltip": false
+    },
+    "sway/window": {
+        "max-length": 60
+    },
+
+    "custom/menu": {
+        "format": "",
+        "on-click": "wofi --show drun",
+        "tooltip": false
+    },
+
+    "custom/power": {
+        "format": "",
+        "on-click": "nwg-bar -x"
+    },
+
+    "custom/dnd": {
+        "interval": "once",
+        "return-type": "json",
+        "format": "{icon}",
+        "format-icons": {
+            "default": "",
+            "dnd": ""
+        },
+        "on-click": "makoctl mode | grep -q 'do-not-disturb' && makoctl mode -r do-not-disturb || makoctl mode -a do-not-disturb; pkill -RTMIN+11 waybar",
+        "exec": "printf '{\"alt\":\"%s\",\"tooltip\":\"Notification mode: %s\"}' $(makoctl mode | grep -q 'do-not-disturb' && echo dnd || echo default) $(makoctl mode | tail -1)",
+        "signal": 11
+    },
+
+    "custom/clipboard": {
+        "format": "",
+        "interval": "once",
+        "return-type": "json",
+        "on-click": "cliphist list | wofi --dmenu | cliphist decode | wl-copy && sleep 0.1 && wtype -M ctrl -P v -p v -m ctrl",
+        "on-click-right": "cliphist list | wofi --dmenu | cliphist delete",
+        "on-click-middle": "rm -f ~/.cache/cliphist/db; pkill -RTMIN+9 waybar",
+        "exec": "printf '{\"tooltip\":\"%s item(s) in the clipboard\\r(Mid click to clear)\"}' \"$(cliphist list | wc -l)\"",
+        "exec-if": "command -v cliphist >/dev/null && [ \"$(cliphist list | wc -l)\" -gt 0 ]",
+        "signal": 9
+    },
+
+    "custom/playerctl": {
+        "interval": "once",
+        "tooltip": true,
+        "return-type": "json",
+        "format": "{icon}",
+        "format-icons": {
+            "Playing": "",
+            "Paused": ""
+        },
+        "exec-if": "command -v playerctl >/dev/null && playerctl status >/dev/null 2>&1",
+        "exec": "playerctl metadata --format '{\"alt\": \"{{status}}\", \"tooltip\": \"{{playerName}}:  {{markup_escape(title)}} - {{markup_escape(artist)}}\" }'",
+        "on-click": "playerctl play-pause; pkill -RTMIN+5 waybar",
+        "on-click-right": "playerctl next; pkill -RTMIN+5 waybar",
+        "on-scroll-up": "playerctl position 10+; pkill -RTMIN+5 waybar",
+        "on-scroll-down": "playerctl position 10-; pkill -RTMIN+5 waybar",
+        "signal": 5
+    },
+
+    "custom/scratchpad": {
+        "interval": "once",
+        "return-type": "json",
+        "format": "{icon}",
+        "format-icons": {
+            "one": "",
+            "many": ""
+        },
+        "exec": "~/.local/share/sway-scripts/scratchpad.sh; pkill -RTMIN+7 waybar",
+        "on-click": "swaymsg 'scratchpad show'",
+        "signal": 7
+    },
+
+    "custom/weather": {
+        "icon-size": 20,
+        "format": "{icon} {}",
+        "tooltip": true,
+        "interval": 3600,
+        "exec": "~/.local/share/sway-scripts/weather.py",
+        "return-type": "json",
+        "format-icons": {
+            "Unknown": "✨",
+            "Cloudy": "☁️",
+            "Fog": "🌫",
+            "HeavyRain": "🌧",
+            "HeavyShowers": "🌧",
+            "HeavySnow": "❄️",
+            "HeavySnowShowers": "❄️",
+            "LightRain": "🌦",
+            "LightShowers": "🌦",
+            "LightSleet": "🌧",
+            "LightSleetShowers": "🌧",
+            "LightSnow": "🌨",
+            "LightSnowShowers": "🌨",
+            "PartlyCloudy": "⛅️",
+            "Sunny": "☀️",
+            "ThunderyHeavyRain": "🌩",
+            "ThunderyShowers": "⛈",
+            "ThunderySnowShowers": "⛈",
+            "VeryCloudy": "☁️"
+        }
+    },
+
+    "custom/wlsunset": {
+        "interval": "once",
+        "tooltip": true,
+        "return-type": "json",
+        "format": "{icon}",
+        "format-icons": {
+            "on": "",
+            "off": ""
+        },
+        "exec": "~/.local/share/sway-scripts/sunset.sh",
+        "on-click": "~/.local/share/sway-scripts/sunset.sh toggle; pkill -RTMIN+6 waybar",
+        "exec-if": "~/.local/share/sway-scripts/sunset.sh check",
+        "signal": 6
+    },
+
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": "",
+            "deactivated": ""
+        },
+        "tooltip-format-activated": "power-saving disabled",
+        "tooltip-format-deactivated": "power-saving enabled"
+    },
+
+    "cpu": {
+        "interval": 5,
+        "format": " {usage}%",
+        "states": { "warning": 70, "critical": 90 },
+        "on-click": "ghostty -e top"
+    },
+    "memory": {
+        "interval": 30,
+        "format": " {}%",
+        "states": { "warning": 70, "critical": 90 },
+        "on-click": "ghostty -e top"
+    },
+    "temperature": {
+        "critical-threshold": 90,
+        "interval": 5,
+        "format": "{icon} {temperatureC}°C",
+        "format-icons": ["", "", ""],
+        "tooltip": false,
+        "on-click": "ghostty -e watch sensors"
+    },
+    "battery": {
+        "format": "{icon} {capacity}%",
+        "format-icons": ["", "", "", "", ""],
+        "format-charging": " {capacity}%"
+    },
+    "network": {
+        "format-wifi": " {signalStrength}%",
+        "format-ethernet": "",
+        "format-disconnected": "",
+        "tooltip-format": "{ifname} ({essid}): {ipaddr}",
+        "on-click": "ghostty -e nmtui"
+    },
+    "bluetooth": {
+        "format": "",
+        "format-disabled": "",
+        "tooltip-format": "{}",
+        "on-click": "ghostty -e bluetoothctl",
+        "on-click-right": "rfkill toggle bluetooth"
+    },
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-muted": " muted",
+        "format-icons": { "default": ["", "", ""] },
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-click-right": "ghostty -e alsamixer",
+        "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+",
+        "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+    },
+    "clock": {
+        "format": "{:%a %b %d  %I:%M %p}",
+        "tooltip-format": "{:%A, %d %B %Y  %I:%M:%S %p}",
+        "interval": 5
+    },
+    "tray": {
+        "icon-size": 18,
+        "spacing": 10
+    }
+}
