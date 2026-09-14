@@ -128,6 +128,8 @@ bindsym $mod+t floating toggle
 # paste. Terminals (ghostty included) bind paste to Ctrl+Shift+V, not plain
 # Ctrl+V, so scripts/paste-focused.sh picks the right keystroke per app_id.
 bindsym $mod+Ctrl+v exec cliphist list | wofi --dmenu | cliphist decode | wl-copy && sleep 0.1 && ~/.config/sway/scripts/paste-focused.sh
+# manual lock (swayidle also locks automatically after 15min idle, see below)
+bindsym $mod+Escape exec swaylock -f
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes, exit sway' 'swaymsg exit'
 
