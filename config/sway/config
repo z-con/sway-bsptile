@@ -163,6 +163,9 @@ bindgesture swipe:3:left exec ~/.local/share/sway-scripts/workspace-cycle.sh pre
 # macOS exposé stand-in: not spatial (sway/SwayFX has no thumbnail-grid
 # overview), but same job -- swipe up, see every open window, pick one.
 bindgesture swipe:3:up exec ~/.local/share/sway-scripts/window-switcher.sh
+# swipe down dismisses it (or any other wofi popup -- launcher, clipboard
+# picker) without picking anything, same as pressing Escape.
+bindgesture swipe:3:down exec pkill -x wofi
 
 bindsym $mod+1 workspace number 1
 bindsym $mod+2 workspace number 2
