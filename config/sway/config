@@ -29,6 +29,17 @@ exec_always ~/.config/sway/scripts/sync-wallpaper.sh watch
 output eDP-1 scale 1
 
 ### Autostart
+# systemd/D-Bus user-session integration. sway doesn't do this itself the way
+# gnome-session/ksmserver do for their sessions, so without it
+# graphical-session.target never activates, and any D-Bus-activated systemd
+# user service gated behind it (Requisite=graphical-session.target) can never
+# start -- e.g. this is why xdg-desktop-portal-gnome refuses to activate on
+# this machine. sway-session.target itself is the small unit at
+# config/systemd/user/sway-session.target (BindsTo=graphical-session.target);
+# graphical-session.target itself refuses direct manual start
+# (RefuseManualStart), which is why this starts sway-session.target instead.
+exec dbus-update-activation-environment --systemd --all
+exec systemctl --user start sway-session.target
 # killall first -- exec_always reruns on every `sway reload`, and waybar
 # doesn't enforce single-instance on its own, so without this each reload
 # stacks another bar on top of the last.
@@ -55,6 +66,13 @@ exec wl-paste --type image --watch cliphist store
 # bsptile-style dynamic BSP/dwindle auto-tiling: picks split direction from
 # each container's aspect ratio instead of you toggling splith/splitv by hand
 exec autotiling -w 1
+# macOS-style bottom dock (pinned/running apps + workspace switcher +
+# launcher button). -d = auto-hide (shows on mouse-to-bottom-edge hotspot,
+# hides a second after you leave); re-running the same command on `sway
+# reload` is safe without a killall guard -- nwg-dock detects the existing
+# resident instance and the new process just exits 0 instead of stacking.
+# -w 10 matches the number of workspace bindings below (mod+1..mod+0).
+exec_always nwg-dock -d -w 10 -mb 8
 
 ### Input
 # bsptile's focus-mode=mouse (focus-follows-cursor)
@@ -107,6 +125,18 @@ animation_duration_ms 150
 layer_effects "wofi" {
     blur enable
     corner_radius 12
+    shadows disable
+}
+
+# Same treatment for the dock. nwg-dock never calls gtk_layer_set_namespace,
+# so its layer surface sits at gtk-layer-shell's own default namespace,
+# literally "gtk-layer-shell" -- that's the criteria here, not "nwg-dock".
+# (nwg-bar shares that same default, so this would blur it too, but it's
+# only ever on-screen for the few seconds of the exit-sway confirmation
+# dialog, so that's harmless.)
+layer_effects "gtk-layer-shell" {
+    blur enable
+    corner_radius 15
     shadows disable
 }
 

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Nautilus "Scripts" menu entry (Nautilus scans ~/.local/share/nautilus/scripts/
+# for executables and lists each one, by filename, under right-click -> Scripts).
+#
+# This exists because Nautilus's own built-in "Set as Wallpaper" action is
+# broken under sway: since GTK4 Nautilus, that action goes exclusively through
+# the xdg-desktop-portal Wallpaper portal (org.freedesktop.impl.portal.Wallpaper)
+# -- no direct-gsettings fallback anymore. Only xdg-desktop-portal-gnome
+# declares support for that interface (confirmed: `xdg-desktop-portal-gtk`
+# does not), and xdg-desktop-portal-gnome itself refuses to implement it
+# outside a real GNOME/Mutter session ("Non-compatible display server,
+# exposing settings only" -- checked by running it with `-v` directly). So
+# under sway the portal call just times out and Nautilus logs "Failed to set
+# wallpaper via portal" and does nothing.
+#
+# This script does directly what the portal call would have done: set
+# picture-uri (and picture-uri-dark, since some things read that instead).
+# config/sway/scripts/sync-wallpaper.sh already watches that exact gsettings
+# key and applies it to swaybg + regenerates the blurred swaylock background,
+# so nothing else needs to change for this to take full effect.
+set -euo pipefail
+
+[ -n "${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS:-}" ] || exit 0
+file=$(head -n1 <<<"$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS")
+[ -f "$file" ] || exit 0
+
+uri="file://$(realpath "$file")"
+gsettings set org.gnome.desktop.background picture-uri "$uri"
+gsettings set org.gnome.desktop.background picture-uri-dark "$uri"

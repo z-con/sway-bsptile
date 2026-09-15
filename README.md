@@ -24,21 +24,27 @@ build). Safe to re-run.
 1. Installs build deps and every runtime tool this config touches: `waybar`,
    `wofi`, `autotiling`, `playerctl`, `mako-notifier`, `cliphist`, `nwg-bar`,
    `wl-clipboard`, `swaylock`, `wlsunset`, `grim`, `jq`, `wtype`,
-   `brightnessctl`, and the PyGObject/Gtk bindings the window switcher's
+   `brightnessctl`, the PyGObject/Gtk bindings the window switcher's
    thumbnail generation uses (`python3-gi`, `gir1.2-gtk-3.0`,
-   `gir1.2-gdkpixbuf-2.0`). All via `apt`.
+   `gir1.2-gdkpixbuf-2.0`), and `golang-go`/`libgtk-3-dev`/
+   `libgtk-layer-shell-dev` to build nwg-dock (step 3 below). All via `apt`.
 2. Builds **SwayFX** from source (0.6, based on sway 1.12) with **scenefx**
    0.5 and **wlroots** 0.20.2 as pinned meson subprojects, per SwayFX's own
    `INSTALL-deb.md`. SwayFX is a drop-in sway fork adding blur, rounded
    corners, and drop shadows -- vanilla sway has no equivalent, and without
    it `corner_radius`/`blur`/`layer_effects`/`animation_duration_ms` in the
-   sway config are silently ignored.
-3. Installs SwayFX to `/usr/local/bin/sway`, which should shadow the
-   apt-packaged `/usr/bin/sway` on PATH (Ubuntu's default `PATH` puts
-   `/usr/local/bin` first, and GDM's `sway.desktop` just runs bare `sway`).
-4. Copies `config/` over `~/.config/` (sway, waybar, wofi, mako, nwg-bar) and
-   `sway-scripts/` into `~/.local/share/sway-scripts/`, `chmod +x`ing
-   everything that needs it.
+   sway config are silently ignored. Installs to `/usr/local/bin/sway`,
+   which should shadow the apt-packaged `/usr/bin/sway` on PATH (Ubuntu's
+   default `PATH` puts `/usr/local/bin` first, and GDM's `sway.desktop` just
+   runs bare `sway`).
+3. Builds and installs **nwg-dock** from source (the macOS-style dock -- no
+   apt package exists, and its own `Makefile` is the install path upstream
+   documents). See "Sway-native extras" below.
+4. Copies `config/` over `~/.config/` (sway, waybar, wofi, mako, nwg-bar,
+   nwg-dock, and the `systemd/user/sway-session.target` unit -- see "Known
+   rough edges" below) and `sway-scripts/` into `~/.local/share/sway-scripts/`,
+   `chmod +x`ing everything that needs it. Also copies `nautilus-scripts/`
+   into `~/.local/share/nautilus/scripts/` (see "Known rough edges").
 5. Downloads the Symbols Nerd Font (waybar's icon glyphs need it) into
    `~/.local/share/fonts/NerdFontsSymbols/` and runs `fc-cache`.
 6. Creates `~/Pictures/Screenshots` (grim's target dir, see below).
@@ -70,6 +76,14 @@ everything up.
 
 ## Sway-native extras (no bsptile equivalent)
 
+- **nwg-dock** -- a macOS-style bottom dock (pinned/running-app icons +
+  workspace switcher + launcher button), auto-hidden until the mouse hits
+  the bottom edge (`-d`). It's Go + GTK3 + gtk-layer-shell, targets sway
+  specifically (there's a separate `nwg-dock-hyprland` fork for Hyprland --
+  not a drop-in for this repo), and has no apt package, so `install.sh`
+  builds it from source into `$BUILD_DIR/nwg-dock` the same way it builds
+  SwayFX. Styled to match waybar/wofi's dark/purple palette via
+  `config/nwg-dock/style.css`.
 - **GNOME wallpaper live-sync** -- `config/sway/scripts/sync-wallpaper.sh`
   (deployed to `~/.config/sway/scripts/`) adopts whatever GNOME's
   `picture-uri` gsettings key currently points at as sway's background, and
@@ -111,6 +125,37 @@ everything up.
 
 ## Known rough edges
 
+- **Nautilus's built-in "Set as Wallpaper" doesn't work under sway.** Since
+  GTK4 Nautilus this action goes exclusively through the
+  `org.freedesktop.impl.portal.Wallpaper` xdg-desktop-portal interface, no
+  direct-gsettings fallback. Of the installed portal backends, only
+  `xdg-desktop-portal-gnome` declares support for it (`xdg-desktop-portal-gtk`
+  doesn't) -- and that backend refuses to actually implement it outside a
+  real GNOME/Mutter session (`xdg-desktop-portal-gnome -v` prints
+  "Non-compatible display server, exposing settings only" on this machine).
+  So the portal call just times out and Nautilus silently does nothing.
+  Confirmed by fixing `graphical-session.target` activation (see below,
+  needed anyway for other systemd/D-Bus-gated user services) and forcing the
+  Wallpaper interface to the gnome backend via a `sway-portals.conf` -- it
+  still refused, for the reason above, so that override was reverted as
+  dead weight (it only adds a timeout before the same failure). The fix
+  instead is `nautilus-scripts/Set as Wallpaper`, deployed to
+  `~/.local/share/nautilus/scripts/`: it sets `picture-uri`/`picture-uri-dark`
+  directly, which `sync-wallpaper.sh`'s watcher already picks up. It shows up
+  under right-click -> **Scripts -> Set as Wallpaper** instead of as a
+  top-level context-menu item -- Nautilus doesn't offer a way to promote a
+  script to the top level.
+- **sway doesn't activate `graphical-session.target` on its own** the way
+  gnome-session/ksmserver do for their sessions -- without it, any
+  D-Bus-activated systemd user service gated behind it
+  (`Requisite=graphical-session.target`, e.g. `xdg-desktop-portal-gnome`)
+  can never start. Fixed by shipping `config/systemd/user/sway-session.target`
+  (`BindsTo=graphical-session.target`) and having sway config run
+  `dbus-update-activation-environment --systemd --all` +
+  `systemctl --user start sway-session.target` on startup (`graphical-session.target`
+  itself refuses direct manual start). This is generally-correct systemd
+  session integration per the sway wiki, independent of the Wallpaper issue
+  above, which it turned out not to fix.
 - wofi's `drun` mode is an app launcher, not a true "workspace overview" --
   closest available primitive to GNOME's Activities Overview, but it won't
   show a spread of open windows the way Overview does (that's what the

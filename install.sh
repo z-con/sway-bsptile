@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Full setup for this machine's sway/SwayFX session: every package, the
-# SwayFX build itself, all config files, companion scripts, and the Nerd
-# Font the waybar icons need.
+# SwayFX and nwg-dock builds, all config files, companion scripts, and the
+# Nerd Font the waybar icons need.
 #
 # Must be run in a real terminal (needs sudo). Safe to re-run: config/script
-# deploy always overwrites with the repo's copy, and the SwayFX build always
-# rebuilds from a fresh clone.
+# deploy always overwrites with the repo's copy, and the SwayFX/nwg-dock
+# builds always rebuild from a fresh clone.
 set -euo pipefail
 
 REPO="$HOME/projects/sway-bsptile"
@@ -20,7 +20,8 @@ sudo apt install -y \
     libxcb-dri3-dev libxcb-present-dev libxcb-res0-dev \
     libxcb-render-util0-dev libxcb-ewmh-dev libxcb-icccm4-dev \
     libliftoff-dev libdisplay-info-dev liblcms2-dev libpixman-1-dev \
-    libgles2-mesa-dev hwdata libudev-dev
+    libgles2-mesa-dev hwdata libudev-dev \
+    golang-go libgtk-3-dev libgtk-layer-shell-dev
 
 echo "==> Installing runtime tools"
 sudo apt install -y \
@@ -56,15 +57,31 @@ ninja -C build/
 sudo ninja -C build/ install
 sudo ldconfig
 
+echo "==> Building nwg-dock (macOS-style dock for sway)"
+rm -rf "$BUILD_DIR/nwg-dock"
+git clone --depth 1 https://github.com/nwg-piotr/nwg-dock.git "$BUILD_DIR/nwg-dock"
+(
+    cd "$BUILD_DIR/nwg-dock"
+    make get
+    make build
+    sudo make install
+)
+
 echo "==> Deploying config files"
 mkdir -p "$HOME/.config"
 cp -r "$REPO/config/." "$HOME/.config/"
 chmod +x "$HOME/.config/sway/scripts/"*.sh
+systemctl --user daemon-reload
 
 echo "==> Deploying companion scripts"
 mkdir -p "$HOME/.local/share/sway-scripts"
 cp "$REPO/sway-scripts/"* "$HOME/.local/share/sway-scripts/"
 chmod +x "$HOME/.local/share/sway-scripts/"*.sh "$HOME/.local/share/sway-scripts/"*.py
+
+echo "==> Deploying Nautilus scripts (right-click -> Scripts)"
+mkdir -p "$HOME/.local/share/nautilus/scripts"
+cp "$REPO/nautilus-scripts/"* "$HOME/.local/share/nautilus/scripts/"
+chmod +x "$HOME/.local/share/nautilus/scripts/"*
 
 echo "==> Installing Symbols Nerd Font (for waybar icon glyphs)"
 FONT_DIR="$HOME/.local/share/fonts/NerdFontsSymbols"

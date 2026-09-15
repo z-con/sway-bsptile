@@ -1,0 +1,35 @@
+/* Same dark/purple palette as waybar and wofi (config/waybar/style.css,
+ * config/wofi/style.css) -- translucent dark background, #9d4edd accent on
+ * hover/focus, matching bsptile's GNOME theme and bsptile-mac's JankyBorders. */
+
+window {
+    background-color: rgba(30, 30, 34, 0.72);
+    border-radius: 15px;
+    border: 1px solid rgba(157, 78, 221, 0.5);
+}
+
+#box {
+    padding: 8px;
+}
+
+button, image {
+    background: none;
+    border-style: none;
+    box-shadow: none;
+    color: #e8e8e8;
+}
+
+button {
+    padding: 4px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+button:hover {
+    background-color: rgba(157, 78, 221, 0.35);
+    border-radius: 8px;
+}
+
+button:focus {
+    box-shadow: 0 0 2px #9d4edd;
+}
