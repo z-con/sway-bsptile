@@ -94,7 +94,7 @@
         "return-type": "json",
         "format": "{icon}",
         "format-icons": {
-            "Playing": "",
+            "Playing": "<span color='#98c379'></span>",
             "Paused": ""
         },
         "exec-if": "command -v playerctl >/dev/null && playerctl status >/dev/null 2>&1",
@@ -111,8 +111,8 @@
         "return-type": "json",
         "format": "{icon}",
         "format-icons": {
-            "one": "",
-            "many": ""
+            "one": "<span color='#c678dd'></span>",
+            "many": "<span color='#c678dd'></span>"
         },
         "exec": "~/.local/share/sway-scripts/scratchpad.sh; pkill -RTMIN+7 waybar",
         "on-click": "swaymsg 'scratchpad show'",
@@ -176,13 +176,13 @@
 
     "cpu": {
         "interval": 5,
-        "format": " {usage}%",
+        "format": "<span color='#d19a66'></span> {usage}%",
         "states": { "warning": 70, "critical": 90 },
         "on-click": "ghostty -e top"
     },
     "memory": {
         "interval": 30,
-        "format": " {}%",
+        "format": "<span color='#61afef'></span> {}%",
         "states": { "warning": 70, "critical": 90 },
         "on-click": "ghostty -e top"
     },
@@ -190,24 +190,24 @@
         "critical-threshold": 90,
         "interval": 5,
         "format": "{icon} {temperatureC}°C",
-        "format-icons": ["", "", ""],
+        "format-icons": ["<span color='#e06c75'></span>", "<span color='#e06c75'></span>", "<span color='#e06c75'></span>"],
         "tooltip": false,
         "on-click": "ghostty -e watch sensors"
     },
     "battery": {
         "format": "{icon} {capacity}%",
-        "format-icons": ["", "", "", "", ""],
-        "format-charging": " {capacity}%"
+        "format-icons": ["<span color='#98c379'></span>", "<span color='#98c379'></span>", "<span color='#98c379'></span>", "<span color='#98c379'></span>", "<span color='#98c379'></span>"],
+        "format-charging": "<span color='#9d4edd'></span> {capacity}%"
     },
     "network": {
-        "format-wifi": " {signalStrength}%",
-        "format-ethernet": "",
+        "format-wifi": "<span color='#56b6c2'></span> {signalStrength}%",
+        "format-ethernet": "<span color='#56b6c2'></span>",
         "format-disconnected": "",
         "tooltip-format": "{ifname} ({essid}): {ipaddr}",
         "on-click": "ghostty -e nmtui"
     },
     "bluetooth": {
-        "format": "",
+        "format": "<span color='#61afef'></span>",
         "format-disabled": "",
         "tooltip-format": "{}",
         "on-click": "ghostty -e bluetoothctl",
@@ -216,7 +216,7 @@
     "pulseaudio": {
         "format": "{icon} {volume}%",
         "format-muted": " muted",
-        "format-icons": { "default": ["", "", ""] },
+        "format-icons": { "default": ["<span color='#e5c07b'></span>", "<span color='#e5c07b'></span>", "<span color='#e5c07b'></span>"] },
         "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
         "on-click-right": "ghostty -e alsamixer",
         "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+",

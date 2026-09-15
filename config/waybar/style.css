@@ -106,16 +106,26 @@ window#waybar {
     color: @accent_fg;
 }
 
-/* Menu (left edge) and power (right edge) bookend the bar as solid accent
- * buttons, like a launcher/power pair either side of a rice-style panel. */
+/* Menu (left edge) and power (right edge) bookend the bar as solid buttons,
+ * like a launcher/power pair either side of a rice-style panel -- menu keeps
+ * the purple brand accent, power gets its own color since "shut down" reads
+ * better as a distinct (red) action than a repeat of the launcher's color. */
 #custom-menu,
 #custom-power {
     margin: 4px 6px;
     padding: 0 12px;
     border-radius: 10px;
+    font-size: 15px;
+}
+
+#custom-menu {
     background: @accent;
     color: @accent_fg;
-    font-size: 15px;
+}
+
+#custom-power {
+    background: @error_color;
+    color: @accent_fg;
 }
 
 #custom-dnd.dnd {
