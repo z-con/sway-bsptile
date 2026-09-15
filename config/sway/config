@@ -64,8 +64,13 @@ exec_always killall -q swayidle; exec swayidle -w \
 exec wl-paste --type text --watch cliphist store
 exec wl-paste --type image --watch cliphist store
 # bsptile-style dynamic BSP/dwindle auto-tiling: picks split direction from
-# each container's aspect ratio instead of you toggling splith/splitv by hand
-exec autotiling -w 1
+# each container's aspect ratio instead of you toggling splith/splitv by hand.
+# No -w/-o restriction -- autotiling defaults to every workspace and output.
+# (This previously read `autotiling -w 1`, which looks like a "just turn it
+# on" flag but is actually --workspaces, restricting autotiling to ONLY
+# workspace number 1 -- everywhere else silently fell back to sway's default
+# same-direction-every-time splitting, which is the columns-not-BSP bug.)
+exec autotiling
 # macOS-style bottom dock (pinned/running apps + workspace switcher +
 # launcher button). -d = auto-hide (shows on mouse-to-bottom-edge hotspot,
 # hides a second after you leave); re-running the same command on `sway
