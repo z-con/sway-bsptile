@@ -1,4 +1,13 @@
-window {
-  background-color: rgba (0, 0, 0, 0);
-  border: none
+/* Upstream's default hotspot.css has "rgba (0, 0, 0, 0)" -- a space before
+ * the "(" that's invalid CSS. GTK's parser silently drops that malformed
+ * declaration and falls back to the theme's default (visible) background,
+ * which is exactly the translucent "pill" artifact left behind when the
+ * dock auto-hides. Fixed here, and applied to the box/eventbox children
+ * too (not just `window`), since GtkEventBox paints its own background by
+ * default regardless of what the containing window's CSS says.
+ */
+window, box, #detector-box, #hotspot-box {
+  background-color: rgba(0, 0, 0, 0);
+  background-image: none;
+  border: none;
 }

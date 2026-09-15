@@ -71,13 +71,29 @@ exec wl-paste --type image --watch cliphist store
 # workspace number 1 -- everywhere else silently fell back to sway's default
 # same-direction-every-time splitting, which is the columns-not-BSP bug.)
 exec autotiling
-# macOS-style bottom dock (pinned/running apps + workspace switcher +
-# launcher button). -d = auto-hide (shows on mouse-to-bottom-edge hotspot,
-# hides a second after you leave); re-running the same command on `sway
-# reload` is safe without a killall guard -- nwg-dock detects the existing
-# resident instance and the new process just exits 0 instead of stacking.
-# -w 10 matches the number of workspace bindings below (mod+1..mod+0).
-exec_always nwg-dock -d -w 10 -mb 8
+# macOS-style dock (pinned/running apps + workspace switcher + launcher
+# button), left edge of the internal laptop panel only (-p left -o eDP-1 --
+# eDP-1 is this machine's panel, see the "output eDP-1 scale 1" line above).
+# Content-sized (no -f), vertically centered on the edge -- NOT full-height,
+# which was tried at one point to make the auto-hide hotspot easier to find
+# but made both the dock and the (broken-transparency, see
+# config/nwg-dock/hotspot.css) hotspot span the whole edge as a visible
+# artifact when hidden. Not needed anyway once -hd is fixed (below).
+# -hd 0: nwg-dock's autohide is a two-stage "fast approach" detector (an
+# outer zone, then a 2px inner strip right at the edge) and only reveals
+# the dock if the cursor crosses from the outer zone into that inner strip
+# within -hd milliseconds (default 20ms!) -- a normal, unhurried mouse
+# movement toward the edge is almost always slower than that and just gets
+# ignored. -hd 0 disables the timing check entirely, so entering the inner
+# strip always reveals the dock regardless of approach speed. (Confirmed
+# against nwg-dock's source at setupHotSpot() in main.go.)
+# -d = auto-hide (shows on hotspot hover, hides a second after you leave);
+# re-running the same command on `sway reload` is safe without a killall
+# guard -- nwg-dock detects the existing resident instance and the new
+# process just exits 0 instead of stacking. -w 10 matches the number of
+# workspace bindings below (mod+1..mod+0). Running-window icons ("task
+# buttons") are on by default, no flag needed.
+exec_always nwg-dock -d -hd 0 -p left -o eDP-1 -w 10
 
 ### Input
 # bsptile's focus-mode=mouse (focus-follows-cursor)
@@ -133,17 +149,19 @@ layer_effects "wofi" {
     shadows disable
 }
 
-# Same treatment for the dock. nwg-dock never calls gtk_layer_set_namespace,
-# so its layer surface sits at gtk-layer-shell's own default namespace,
-# literally "gtk-layer-shell" -- that's the criteria here, not "nwg-dock".
-# (nwg-bar shares that same default, so this would blur it too, but it's
-# only ever on-screen for the few seconds of the exit-sway confirmation
-# dialog, so that's harmless.)
-layer_effects "gtk-layer-shell" {
-    blur enable
-    corner_radius 15
-    shadows disable
-}
+# Deliberately NOT applying the same blur/corner_radius treatment to the
+# dock via layer_effects: nwg-dock never calls gtk_layer_set_namespace, so
+# ALL of its layer surfaces -- the visible dock AND its normally-invisible
+# auto-hide hotspot window -- sit at gtk-layer-shell's own default
+# namespace, literally "gtk-layer-shell". sway/SwayFX's layer_effects can
+# only match by namespace, so there's no way to target just the dock: SwayFX
+# blur samples the desktop behind whatever surface it's told to blur
+# regardless of that surface's own alpha, so blurring "gtk-layer-shell"
+# turned the (meant to be fully invisible) hotspot into a visible frosted
+# rounded pill sitting at the dock's position at all times -- covered by the
+# dock while shown, exposed as a stray artifact once it auto-hid. The dock
+# still gets flat rounded corners and translucency from its own CSS
+# (config/nwg-dock/style.css); it just doesn't get SwayFX's backdrop blur.
 
 floating_modifier $mod normal
 
