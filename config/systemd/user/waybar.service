@@ -1,0 +1,30 @@
+# Overrides the waybar package's own unit at /usr/lib/systemd/user/waybar.service
+# (same name, ~/.config/systemd/user takes precedence) -- that one uses
+# Requisite=graphical-session.target with no ExecCondition, which install.sh
+# unmasks and re-enables under this same name.
+#
+# waybar has no single-instance guard of its own. It used to be started by an
+# `exec_always killall -q waybar; exec waybar` line in sway's config -- a
+# fire-and-forget shell fork sway never supervises or confirms the result of,
+# which was unreliable across cold boots (waybar would sometimes just never
+# come up, nothing in the logs to show why). mako (which has the same
+# "don't stack duplicates on reload" problem) already solves it via its own
+# systemd unit -- see /usr/lib/systemd/user/mako.service -- with real process
+# supervision and Restart=on-failure, so waybar gets the same treatment here:
+# After (not Requisite) graphical-session.target, plus an ExecCondition gate
+# so it never even attempts to start before the Wayland socket exists.
+[Unit]
+Description=Highly customizable Wayland bar for Sway and Wlroots based compositors
+Documentation=https://github.com/Alexays/Waybar/wiki/
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecCondition=/bin/sh -c '[ -n "$WAYLAND_DISPLAY" ]'
+ExecStart=/usr/bin/waybar
+ExecReload=kill -SIGUSR2 $MAINPID
+Restart=on-failure
+RestartSec=1
+
+[Install]
+WantedBy=graphical-session.target

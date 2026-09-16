@@ -40,10 +40,13 @@ output eDP-1 scale 1
 # (RefuseManualStart), which is why this starts sway-session.target instead.
 exec dbus-update-activation-environment --systemd --all
 exec systemctl --user start sway-session.target
-# killall first -- exec_always reruns on every `sway reload`, and waybar
-# doesn't enforce single-instance on its own, so without this each reload
-# stacks another bar on top of the last.
-exec_always killall -q waybar; exec waybar
+# waybar (top bar) is managed by systemd instead of an exec line here --
+# config/systemd/user/waybar.service, deployed and enabled by install.sh.
+# waybar has no single-instance guard of its own, so unlike mako below it
+# can't just be re-exec'd on every reload without a killall first; that
+# killall+exec_always shell-fork approach turned out to be unreliable across
+# cold boots (waybar would sometimes silently never start). See
+# waybar.service for the reasoning.
 # mako notification daemon (bsptile-equivalent for notification popups). No
 # killall needed here -- it's a single-instance DBus service, so a second
 # `mako` from a config reload just fails to grab the name and exits quietly.
@@ -283,6 +286,7 @@ bindsym --locked XF86MonBrightnessDown exec brightnessctl set 5%-
 bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
 bindsym Print exec GRIM_DEFAULT_DIR=$HOME/Pictures/Screenshots grim
 
-# Native sway bar disabled -- waybar (started above) plays the top-panel role.
+# Native sway bar disabled -- waybar (see waybar.service, autostart section
+# above) plays the top-panel role.
 
 include /etc/sway/config.d/*

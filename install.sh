@@ -70,9 +70,22 @@ git clone --depth 1 https://github.com/nwg-piotr/nwg-dock.git "$BUILD_DIR/nwg-do
 
 echo "==> Deploying config files"
 mkdir -p "$HOME/.config"
+# Unmask first: if a previous run (or manual debugging) left waybar.service
+# masked (a symlink to /dev/null at this exact path), `cp` below would
+# silently write through that symlink into /dev/null instead of creating the
+# real override file.
+systemctl --user unmask waybar.service 2>/dev/null || true
 cp -r "$REPO/config/." "$HOME/.config/"
 chmod +x "$HOME/.config/sway/scripts/"*.sh
 systemctl --user daemon-reload
+systemctl --user enable --now waybar.service
+
+# snapd's desktop-theme-matching integration only ever helps a GNOME session
+# (it needs a polkit agent to authorize installing the accent-color theme
+# snap it wants); under sway there's no agent, so it just fails with "access
+# denied" and nags on every login. Silence it -- it's cosmetic only, the
+# actual gtk-common-themes content snaps snap apps use are already connected.
+systemctl --user mask snap.snapd-desktop-integration.snapd-desktop-integration.service 2>/dev/null || true
 
 echo "==> Deploying companion scripts"
 mkdir -p "$HOME/.local/share/sway-scripts"
