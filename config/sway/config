@@ -57,9 +57,9 @@ exec_always mako
 # killall guard for the same reason as waybar above -- exec_always reruns on
 # reload and swayidle has no single-instance guard of its own.
 exec_always killall -q swayidle; exec swayidle -w \
-    timeout 900 'gtklock -d' \
+    timeout 900 'hyprlock' \
     timeout 900 'systemctl suspend' \
-    before-sleep 'gtklock -d'
+    before-sleep 'hyprlock'
 # feed clipboard history into cliphist (text + images separately, per
 # cliphist's own recommendation) -- plain `exec`, not `exec_always`, since
 # these are long-running watchers with no single-instance guard of their
@@ -185,7 +185,7 @@ bindsym $mod+t floating toggle
 # Ctrl+V, so scripts/paste-focused.sh picks the right keystroke per app_id.
 bindsym $mod+Ctrl+v exec cliphist list | wofi --dmenu | cliphist decode | wl-copy && sleep 0.1 && ~/.config/sway/scripts/paste-focused.sh
 # manual lock (swayidle also locks automatically after 15min idle, see below)
-bindsym $mod+Escape exec gtklock -d
+bindsym $mod+Escape exec hyprlock
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes, exit sway' 'swaymsg exit'
 

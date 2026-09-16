@@ -27,9 +27,8 @@ echo "==> Installing runtime tools"
 sudo apt install -y \
     waybar wofi autotiling \
     playerctl mako-notifier cliphist nwg-bar wl-clipboard \
-    gtklock gtklock-userinfo-module swayidle wlsunset \
+    hyprlock swayidle wlsunset \
     blueman \
-    imagemagick \
     grim jq wtype brightnessctl unzip curl \
     python3-gi gir1.2-gtk-3.0 gir1.2-gdkpixbuf-2.0
 
@@ -78,8 +77,16 @@ mkdir -p "$HOME/.config"
 systemctl --user unmask waybar.service 2>/dev/null || true
 cp -r "$REPO/config/." "$HOME/.config/"
 chmod +x "$HOME/.config/sway/scripts/"*.sh
+# config/pam.d isn't a real XDG config dir -- it's installed to /etc/pam.d
+# below (needs root), not ~/.config, so drop the copy the line above left there.
+rm -rf "$HOME/.config/pam.d"
 systemctl --user daemon-reload
 systemctl --user enable --now waybar.service
+
+# hyprlock's PAM service: deliberately skips pam_fprintd (hyprlock's own
+# auth.fingerprint config block talks to fprintd directly instead) -- see
+# config/pam.d/hyprlock for why.
+sudo install -m644 "$REPO/config/pam.d/hyprlock" /etc/pam.d/hyprlock
 
 # snapd's desktop-theme-matching integration only ever helps a GNOME session
 # (it needs a polkit agent to authorize installing the accent-color theme

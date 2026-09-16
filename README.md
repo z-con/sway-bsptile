@@ -23,10 +23,9 @@ build). Safe to re-run.
 
 1. Installs build deps and every runtime tool this config touches: `waybar`,
    `wofi`, `autotiling`, `playerctl`, `mako-notifier`, `cliphist`, `nwg-bar`,
-   `wl-clipboard`, `gtklock`, `gtklock-userinfo-module`, `swayidle`,
-   `wlsunset`, `grim`, `jq`, `wtype`, `brightnessctl`, the PyGObject/Gtk
-   bindings the window switcher's thumbnail generation uses (`python3-gi`,
-   `gir1.2-gtk-3.0`,
+   `wl-clipboard`, `hyprlock`, `swayidle`, `wlsunset`, `grim`, `jq`, `wtype`,
+   `brightnessctl`, the PyGObject/Gtk bindings the window switcher's
+   thumbnail generation uses (`python3-gi`, `gir1.2-gtk-3.0`,
    `gir1.2-gdkpixbuf-2.0`), and `golang-go`/`libgtk-3-dev`/
    `libgtk-layer-shell-dev` to build nwg-dock (step 3 below). All via `apt`.
 2. Builds **SwayFX** from source (0.6, based on sway 1.12) with **scenefx**
@@ -42,10 +41,15 @@ build). Safe to re-run.
    apt package exists, and its own `Makefile` is the install path upstream
    documents). See "Sway-native extras" below.
 4. Copies `config/` over `~/.config/` (sway, waybar, wofi, mako, nwg-bar,
-   nwg-dock, and the `systemd/user/sway-session.target` unit -- see "Known
-   rough edges" below) and `sway-scripts/` into `~/.local/share/sway-scripts/`,
-   `chmod +x`ing everything that needs it. Also copies `nautilus-scripts/`
-   into `~/.local/share/nautilus/scripts/` (see "Known rough edges").
+   nwg-dock, hypr, and the `systemd/user/sway-session.target`/`waybar.service`
+   units -- see "Known rough edges" below) and `sway-scripts/` into
+   `~/.local/share/sway-scripts/`, `chmod +x`ing everything that needs it.
+   Also copies `nautilus-scripts/` into `~/.local/share/nautilus/scripts/`
+   (see "Known rough edges"), and installs `config/pam.d/hyprlock` to
+   `/etc/pam.d/hyprlock` (needs root, so it's a separate `sudo install` step
+   rather than part of the `~/.config` copy) -- this is what makes hyprlock's
+   password check skip `pam_fprintd` in favor of its own native, parallel
+   fingerprint support (see that file for why).
 5. Downloads the Symbols Nerd Font (waybar's icon glyphs need it) into
    `~/.local/share/fonts/NerdFontsSymbols/` and runs `fc-cache`.
 6. Creates `~/Pictures/Screenshots` (grim's target dir, see below).

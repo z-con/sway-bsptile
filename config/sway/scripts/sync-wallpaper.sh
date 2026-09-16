@@ -4,29 +4,12 @@
 # sway, e.g. nautilus "Set as Wallpaper") show up here too.
 set -euo pipefail
 
-LOCK_BG="$HOME/.cache/sway-bsptile/lock-bg.png"
-
 apply() {
     local uri path
     uri=$(gsettings get org.gnome.desktop.background picture-uri 2>/dev/null | tr -d "'")
     path=${uri#file://}
     [ -n "$path" ] && [ -f "$path" ] || return 0
     swaymsg output '*' bg "$path" fill
-    make_lock_bg "$path"
-}
-
-# Pre-render a blurred, theme-tinted copy of the wallpaper for the lock
-# screen (gtklock) -- it has no built-in blur, so this bakes the same look
-# into a static image instead. Downscale-then-blur
-# is much cheaper than blurring at full resolution and looks identical once
-# it's re-upscaled and out of focus anyway. The colorize tints it toward the
-# theme's #1c1c20 bg instead of plain black, for legible text without
-# looking like an unrelated darkening filter was slapped on top.
-make_lock_bg() {
-    command -v convert >/dev/null 2>&1 || return 0
-    mkdir -p "$(dirname "$LOCK_BG")"
-    convert "$1" -resize 20% -blur 0x8 -resize 500% \
-        -fill '#1c1c20' -colorize 35% "$LOCK_BG"
 }
 
 case "${1:-apply}" in

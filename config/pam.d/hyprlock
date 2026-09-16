@@ -1,0 +1,12 @@
+# PAM configuration for hyprlock. Deployed to /etc/pam.d/hyprlock by
+# install.sh (needs sudo -- this isn't under ~/.config so the regular
+# `cp -r config/. ~/.config/` deploy step can't reach it).
+#
+# Deliberately does NOT `include login` the way swaylock/gtklock's PAM files
+# did -- that pulls in pam_fprintd via common-auth, which stacks fingerprint
+# ahead of the password check and makes every password attempt sit through
+# pam_fprintd's own timeout first, for no benefit. hyprlock's own
+# auth.fingerprint block in hyprlock.conf already talks to fprintd directly,
+# in parallel with this password check, so pam_fprintd has no job left to do
+# here.
+auth       required     pam_unix.so try_first_pass nullok
