@@ -15,9 +15,9 @@ apply() {
     make_lock_bg "$path"
 }
 
-# Pre-render a blurred, theme-tinted copy of the wallpaper for swaylock --
-# swaylock has no built-in blur (that's a swaylock-effects-only feature), so
-# this bakes the same look into a static image instead. Downscale-then-blur
+# Pre-render a blurred, theme-tinted copy of the wallpaper for the lock
+# screen (gtklock) -- it has no built-in blur, so this bakes the same look
+# into a static image instead. Downscale-then-blur
 # is much cheaper than blurring at full resolution and looks identical once
 # it's re-upscaled and out of focus anyway. The colorize tints it toward the
 # theme's #1c1c20 bg instead of plain black, for legible text without

@@ -23,9 +23,10 @@ build). Safe to re-run.
 
 1. Installs build deps and every runtime tool this config touches: `waybar`,
    `wofi`, `autotiling`, `playerctl`, `mako-notifier`, `cliphist`, `nwg-bar`,
-   `wl-clipboard`, `swaylock`, `wlsunset`, `grim`, `jq`, `wtype`,
-   `brightnessctl`, the PyGObject/Gtk bindings the window switcher's
-   thumbnail generation uses (`python3-gi`, `gir1.2-gtk-3.0`,
+   `wl-clipboard`, `gtklock`, `gtklock-userinfo-module`, `swayidle`,
+   `wlsunset`, `grim`, `jq`, `wtype`, `brightnessctl`, the PyGObject/Gtk
+   bindings the window switcher's thumbnail generation uses (`python3-gi`,
+   `gir1.2-gtk-3.0`,
    `gir1.2-gdkpixbuf-2.0`), and `golang-go`/`libgtk-3-dev`/
    `libgtk-layer-shell-dev` to build nwg-dock (step 3 below). All via `apt`.
 2. Builds **SwayFX** from source (0.6, based on sway 1.12) with **scenefx**
